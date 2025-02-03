@@ -43,7 +43,7 @@ spec:
       name: Fetch Base
       action: fetch:template
       input:
-        url: ./contents
+        url: https://github.com/Mariano-SI/backstageIO-nodejs-api-template/tree/master/contents
         values:
           name: ${{ parameters.name }}
           description: ${{parameters.description}}
