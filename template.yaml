@@ -24,7 +24,6 @@ spec:
           title: Description
           type: string
           description: Add a description to the new component
-          ui:autofocus: true
           ui:options:
             rows: 5
     - title: Choose a location
@@ -44,7 +43,7 @@ spec:
       name: Fetch Base
       action: fetch:template
       input:
-        url: ./template
+        url: ./contents
         values:
           name: ${{ parameters.name }}
           description: ${{parameters.description}}
