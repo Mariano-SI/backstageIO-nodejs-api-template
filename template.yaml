@@ -79,9 +79,18 @@ spec:
     
 
     # The final step is to register our new component in the catalog.
-    - id: register
+    - id: Register Github
       name: Register
+      if: ${{ parameters.repoHost == 'github' }}
       action: catalog:register
       input:
-        repoContentsUrl: ${{ parameters.repoHost === 'github' && steps['publish'].output.repoContentsUrl || steps['publish-azure'].output.repoContentsUrl }}
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+        
+    - id: Register Azure
+      name: Register
+      if: ${{ parameters.repoHost == 'azure' }}
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish-azure'].output.repoContentsUrl }}
         catalogInfoPath: '/catalog-info.yaml'
