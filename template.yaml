@@ -1,13 +1,13 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-name: teste-mariano-node-oop
-title: Example Node.js oop Template
-description: A template for creating a new component in the Backstage software catalog.
+  name: teste-mariano-node-oop
+  title: Example Node.js oop Template
+  description: A template for creating a new component in the Backstage software catalog.
 spec:
-owner: 'mariano'
-type: service
-parameters:
+  owner: 'mariano'
+  type: service
+  parameters:
   - title: Fill in some steps
     required:
       - name
