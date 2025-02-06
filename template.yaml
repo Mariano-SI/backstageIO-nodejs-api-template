@@ -12,6 +12,8 @@ spec:
       required:
         - name
         - description
+        - repoHost
+        - repoUrl
       properties:
         name:
           title: Name
@@ -26,10 +28,14 @@ spec:
           description: Add a description to the new component
           ui:options:
             rows: 5
-    - title: Choose a location
-      required:
-        - repoUrl
-      properties:
+        repoHost:
+          title: Repository Host
+          type: string
+          description: Choose where to host your repository
+          enum:
+            - github
+            - azure
+          default: github
         repoUrl:
           title: Repository Location
           type: string
@@ -37,6 +43,7 @@ spec:
           ui:options:
             allowedHosts:
               - github.com
+              - dev.azure.com
   steps:
     # Each step executes an action, in this case one templates files into the working directory.
     - id: fetch-base
