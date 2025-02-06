@@ -64,6 +64,17 @@ spec:
         allowedHosts: ['github.com']
         description: This is ${{ parameters.description }}
         repoUrl: ${{ parameters.repoUrl }}
+
+    - id: publish-azure
+      name: Publish to Azure DevOps
+      if: ${{ parameters.repoHost == 'azure' }}
+      action: publish:azure
+      input:
+        allowedHosts: ['dev.azure.com']
+        organization: ${{ parseRepoUrl(parameters.repoUrl).organization }}
+        project: ${{ parseRepoUrl(parameters.repoUrl).project }}
+        repo: ${{ parseRepoUrl(parameters.repoUrl).repo }}
+        description: This is ${{ parameters.description }}
     
 
     # The final step is to register our new component in the catalog.
