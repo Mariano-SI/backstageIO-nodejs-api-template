@@ -71,6 +71,7 @@ spec:
       action: publish:azure
       input:
         allowedHosts: ['dev.azure.com']
+        repoUrl: ${{ parameters.repoUrl }}
         organization: ${{ parseRepoUrl(parameters.repoUrl).organization }}
         project: ${{ parseRepoUrl(parameters.repoUrl).project }}
         repo: ${{ parseRepoUrl(parameters.repoUrl).repo }}
