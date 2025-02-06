@@ -1,66 +1,86 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: teste-mariano-node-oop
-  title: Example Node.js oop Template
-  description: A template for creating a new component in the Backstage software catalog.
+name: teste-mariano-node-oop
+title: Example Node.js oop Template
+description: A template for creating a new component in the Backstage software catalog.
 spec:
-  owner: 'mariano'
-  type: service
-  parameters:
-    - title: Fill in some steps
-      required:
-        - name
-        - description
-      properties:
-        name:
-          title: Name
-          type: string
-          description: Unique name of the component
-          ui:autofocus: true
-          ui:options:
-            rows: 5
-        description:
-          title: Description
-          type: string
-          description: Add a description to the new component
-          ui:options:
-            rows: 5
-    - title: Choose a location
-      required:
-        - repoUrl
-      properties:
-        repoUrl:
-          title: Repository Location
-          type: string
-          ui:field: RepoUrlPicker
-          ui:options:
-            allowedHosts:
-              - github.com
-  steps:
-    # Each step executes an action, in this case one templates files into the working directory.
-    - id: fetch-base
-      name: Fetch Base
-      action: fetch:template
-      input:
-        url: https://github.com/Mariano-SI/backstageIO-nodejs-api-template/tree/master/contents
-        values:
-          name: ${{ parameters.name }}
-          description: ${{parameters.description}}
+owner: 'mariano'
+type: service
+parameters:
+  - title: Fill in some steps
+    required:
+      - name
+      - description
+      - repoHost
+      - repoUrl
+    properties:
+      name:
+        title: Name
+        type: string
+        description: Unique name of the component
+        ui:autofocus: true
+        ui:options:
+          rows: 5
+      description:
+        title: Description
+        type: string
+        description: Add a description to the new component
+        ui:options:
+          rows: 5
+      repoHost:
+        title: Repository Host
+        type: string
+        description: Choose where to host your repository
+        enum:
+          - github
+          - azure
+        default: github
+      repoUrl:
+        title: Repository Location
+        type: string
+        ui:field: RepoUrlPicker
+        ui:options:
+          allowedHosts:
+            - github.com
+            - dev.azure.com
+          defaultValue: ${{ parameters.repoHost == 'github' ? 'github.com' : 'dev.azure.com' }}
+steps:
+  # Step 1: Fetch the base template
+  - id: fetch-base
+    name: Fetch Base
+    action: fetch:template
+    input:
+      url: https://github.com/Mariano-SI/backstageIO-nodejs-api-template/tree/master/contents
+      values:
+        name: ${{ parameters.name }}
+        description: ${{ parameters.description }}
 
-    # This step publishes the contents of the working directory to GitHub.
-    - id: publish
-      name: Publish
-      action: publish:github
-      input:
-        allowedHosts: ['github.com']
-        description: This is ${{ parameters.description }}
-        repoUrl: ${{ parameters.repoUrl }}
+  # Step 2: Publish to the selected repository host
+  - id: publish
+    name: Publish to GitHub
+    if: ${{ parameters.repoHost == 'github' }}
+    action: publish:github
+    input:
+      allowedHosts: ['github.com']
+      description: This is ${{ parameters.description }}
+      repoUrl: ${{ parameters.repoUrl }}
 
-    # The final step is to register our new component in the catalog.
-    - id: register
-      name: Register
-      action: catalog:register
-      input:
-        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
-        catalogInfoPath: '/catalog-info.yaml'
+  - id: publish-azure
+    name: Publish to Azure DevOps
+    if: ${{ parameters.repoHost == 'azure' }}
+    action: publish:azure
+    input:
+      allowedHosts: ['dev.azure.com']
+      organization: ${{ parseRepoUrl(parameters.repoUrl).organization }}
+      project: ${{ parseRepoUrl(parameters.repoUrl).project }}
+      repo: ${{ parseRepoUrl(parameters.repoUrl).repo }}
+      description: This is ${{ parameters.description }}
+
+  # Step 3: Register the component in the catalog
+  - id: register
+    name: Register
+    action: catalog:register
+    input:
+      repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl || steps['publish-azure'].output.repoContentsUrl }}
+      catalogInfoPath: '/catalog-info.yaml'
