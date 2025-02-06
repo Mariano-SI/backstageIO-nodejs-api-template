@@ -57,12 +57,14 @@ spec:
 
     # This step publishes the contents of the working directory to GitHub.
     - id: publish
-      name: Publish
+      name: Publish to Github
+      if: ${{ parameters.repoHost == 'github' }}
       action: publish:github
       input:
         allowedHosts: ['github.com']
         description: This is ${{ parameters.description }}
         repoUrl: ${{ parameters.repoUrl }}
+    
 
     # The final step is to register our new component in the catalog.
     - id: register
