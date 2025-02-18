@@ -12,6 +12,8 @@ spec:
       required:
         - name
         - description
+        - repoHost
+        - repoUrl
       properties:
         name:
           title: Name
@@ -26,10 +28,14 @@ spec:
           description: Add a description to the new component
           ui:options:
             rows: 5
-    - title: Choose a location
-      required:
-        - repoUrl
-      properties:
+        repoHost:
+          title: Repository Host
+          type: string
+          description: Choose where to host your repository
+          enum:
+            - github
+            - azure
+          default: github
         repoUrl:
           title: Repository Location
           type: string
@@ -37,6 +43,7 @@ spec:
           ui:options:
             allowedHosts:
               - github.com
+              - dev.azure.com
   steps:
     # Each step executes an action, in this case one templates files into the working directory.
     - id: fetch-base
@@ -50,7 +57,8 @@ spec:
 
     # This step publishes the contents of the working directory to GitHub.
     - id: publish
-      name: Publish
+      name: Publish to Github
+      if: ${{ parameters.repoHost == 'github' }}
       action: publish:github
       input:
         allowedHosts: ['github.com']
@@ -58,10 +66,24 @@ spec:
         repoUrl: ${{ parameters.repoUrl }}
         repoVisibility: public # or 'internal' or 'private'
 
+    - id: publish-azure
+      name: Publish to Azure DevOps
+      if: ${{ parameters.repoHost == 'azure' }}
+      action: publish:azure
+      input:
+        allowedHosts: ['dev.azure.com']
+        repoUrl: ${{ parameters.repoUrl }}
+        organization: ${{ parseRepoUrl(parameters.repoUrl).organization }}
+        project: ${{ parseRepoUrl(parameters.repoUrl).project }}
+        repo: ${{ parseRepoUrl(parameters.repoUrl).repo }}
+        description: This is ${{ parameters.description }}
+    
+
     # The final step is to register our new component in the catalog.
-    - id: register
+
+    - id: Register 
       name: Register
       action: catalog:register
       input:
-        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        repoContentsUrl: ${{ steps['publish-azure'].output.repoContentsUrl if parameters.repoHost === 'azure' else steps['publish'].output.repoContentsUrl }}
         catalogInfoPath: '/catalog-info.yaml'
